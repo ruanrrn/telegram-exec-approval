@@ -1,52 +1,57 @@
 # OpenClaw Telegram Exec Approval Skill
 
-Reusable OpenClaw skill for diagnosing, implementing, and upstreaming Telegram interactive exec approvals.
+Reusable OpenClaw skill for fixing Telegram interactive exec approvals without turning the debugging process into folklore.
 
-## Repository
+## Why this exists
 
-- Name: `openclaw-telegram-exec-approval-skill`
-- Purpose: package one focused skill around the Telegram exec approval flow instead of burying the workflow in chat logs or one-off local patches
-- Audience: OpenClaw users who need to fix broken Telegram approval UX, validate the runtime path locally, or prepare a clean upstream PR
+Telegram approval UX can fail in a few especially annoying ways:
 
-## What is included
+- approval messages show the wrong id
+- buttons are missing or bound to the wrong approval target
+- duplicate approval messages appear after restart
+- local validation works, but the change is too messy to upstream cleanly
 
-- `telegram-exec-approval-ui/` - skill source
-- `telegram-exec-approval-ui/references/upstream-plan.md` - source-level patch mapping and cleanup plan
-- `telegram-exec-approval-ui/references/pr-draft.md` - draft PR framing and validation notes
-- `dist/telegram-exec-approval-ui.skill` - packaged artifact ready to import or share
+This repository packages that workflow into one focused OpenClaw skill so the fix is reusable instead of trapped in one machine's chat history.
 
-## Skill scope
+## What you get
 
-The skill covers the practical Telegram approval workflow:
-
-- separate native `approvalId` from short display-only ids
-- wire Telegram inline buttons to `/approve <full-id> ...`
-- resolve the real Telegram target from the OpenClaw session record
-- reduce duplicate approval surfaces after restarts
-- keep the Telegram approval message minimal when detail already exists elsewhere
-- turn local runtime experiments into a smaller upstreamable patch plan
+- `telegram-exec-approval-ui/` - the skill source
+- `telegram-exec-approval-ui/references/upstream-plan.md` - how to translate local runtime patching into a source-level fix
+- `telegram-exec-approval-ui/references/pr-draft.md` - PR framing and validation notes
+- `dist/telegram-exec-approval-ui.skill` - packaged artifact ready to install or share
 
 ## Install
 
-Choose one path:
+Use either path:
 
-1. Import `dist/telegram-exec-approval-ui.skill` into the target OpenClaw environment.
-2. Copy `telegram-exec-approval-ui/` into a skills directory when you want the editable source.
+1. Import `dist/telegram-exec-approval-ui.skill` into an OpenClaw environment.
+2. Copy `telegram-exec-approval-ui/` into your skills directory if you want the editable source.
 
-## Use
+## When to use the skill
 
-Trigger the skill when Telegram exec approvals are missing buttons, using the wrong id, duplicating after restart, or when the fix needs to be packaged for reuse or upstream review.
+Use it when OpenClaw on Telegram needs any of the following:
 
-Start with:
+- diagnose broken exec approval flows
+- repair button-driven approval routing
+- distinguish full `approvalId` from short display-only ids
+- suppress duplicate native approval messages after restart
+- prepare a cleaner upstream patch or PR for the Telegram approval flow
 
-1. `telegram-exec-approval-ui/SKILL.md`
-2. `telegram-exec-approval-ui/references/upstream-plan.md`
-3. `telegram-exec-approval-ui/references/pr-draft.md`
+## Skill outcome
+
+The skill walks an agent through a practical sequence:
+
+1. separate the approval surfaces
+2. verify the native Telegram approval path
+3. patch the smallest wrong user-visible surface first
+4. dedupe noisy or repeated approval messages
+5. reduce local experiments into a reusable or upstreamable change
 
 ## Repository layout
 
 ```text
 openclaw-telegram-exec-approval-skill/
+├── LICENSE
 ├── README.md
 ├── telegram-exec-approval-ui/
 │   ├── SKILL.md
@@ -57,8 +62,13 @@ openclaw-telegram-exec-approval-skill/
     └── telegram-exec-approval-ui.skill
 ```
 
-## Publishing notes
+## Release hygiene
 
-- Keep the repository description aligned with the skill trigger language.
-- Regenerate `dist/telegram-exec-approval-ui.skill` after each material skill change.
-- Keep the repo focused on the skill and its packaged artifact; avoid dumping unrelated debugging scraps into the tree.
+- keep the repository description aligned with the skill trigger language
+- regenerate `dist/telegram-exec-approval-ui.skill` after each material skill change
+- keep the repo narrow and practical; no unrelated debug junk
+
+## Repository
+
+- GitHub: `https://github.com/ruanrrn/openclaw-telegram-exec-approval-skill`
+- License: MIT
