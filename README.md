@@ -1,6 +1,6 @@
-# OpenClaw Telegram Exec Approval Skill
+# Telegram Exec Approval
 
-Reusable OpenClaw skill for fixing Telegram interactive exec approvals without turning the debugging process into folklore.
+Reusable skill for fixing Telegram interactive exec approvals without turning the debugging process into folklore.
 
 ## Why this exists
 
@@ -11,7 +11,7 @@ Telegram approval UX can fail in a few especially annoying ways:
 - duplicate approval messages appear after restart
 - local validation works, but the change is too messy to upstream cleanly
 
-This repository packages that workflow into one focused OpenClaw skill so the fix is reusable instead of trapped in one machine's chat history.
+This repository packages that workflow into one focused skill so the fix is reusable instead of trapped in one machine's chat history.
 
 ## What you get
 
@@ -29,7 +29,7 @@ Use either path:
 
 ## When to use the skill
 
-Use it when OpenClaw on Telegram needs any of the following:
+Use it when Telegram needs any of the following:
 
 - diagnose broken exec approval flows
 - repair button-driven approval routing
@@ -50,7 +50,7 @@ The skill walks an agent through a practical sequence:
 ## Repository layout
 
 ```text
-openclaw-telegram-exec-approval-skill/
+telegram-exec-approval/
 ├── LICENSE
 ├── README.md
 ├── telegram-exec-approval-ui/
@@ -70,5 +70,5 @@ openclaw-telegram-exec-approval-skill/
 
 ## Repository
 
-- GitHub: `https://github.com/ruanrrn/openclaw-telegram-exec-approval-skill`
+- GitHub: `https://github.com/ruanrrn/telegram-exec-approval`
 - License: MIT
