@@ -1,28 +1,52 @@
-# Telegram Exec Approval UI Skill
+# OpenClaw Telegram Exec Approval Skill
 
-A reusable OpenClaw skill for implementing and upstreaming Telegram interactive exec approvals.
+Reusable OpenClaw skill for diagnosing, implementing, and upstreaming Telegram interactive exec approvals.
 
-## What this repo contains
+## Repository
 
-- `telegram-exec-approval-ui/` - the skill source
-- `dist/telegram-exec-approval-ui.skill` - packaged skill artifact
+- Name: `openclaw-telegram-exec-approval-skill`
+- Purpose: package one focused skill around the Telegram exec approval flow instead of burying the workflow in chat logs or one-off local patches
+- Audience: OpenClaw users who need to fix broken Telegram approval UX, validate the runtime path locally, or prepare a clean upstream PR
 
-## What the skill covers
+## What is included
 
-This skill documents a practical workflow for fixing Telegram exec approvals in OpenClaw, including:
+- `telegram-exec-approval-ui/` - skill source
+- `telegram-exec-approval-ui/references/upstream-plan.md` - source-level patch mapping and cleanup plan
+- `telegram-exec-approval-ui/references/pr-draft.md` - draft PR framing and validation notes
+- `dist/telegram-exec-approval-ui.skill` - packaged artifact ready to import or share
 
-- distinguishing native `approvalId` from short `approvalSlug` surfaces
-- adding a Telegram-native runtime approval handler
-- sending inline approval buttons bound to the full approval id
-- normalizing `telegram:<id>` targets before Bot API delivery
-- suppressing duplicate native approval messages after hot restarts
-- keeping the custom Telegram approval message minimal when another message already carries the details
-- translating local `dist`-level validation into a cleaner upstream PR plan
+## Skill scope
 
-## Repo layout
+The skill covers the practical Telegram approval workflow:
+
+- separate native `approvalId` from short display-only ids
+- wire Telegram inline buttons to `/approve <full-id> ...`
+- resolve the real Telegram target from the OpenClaw session record
+- reduce duplicate approval surfaces after restarts
+- keep the Telegram approval message minimal when detail already exists elsewhere
+- turn local runtime experiments into a smaller upstreamable patch plan
+
+## Install
+
+Choose one path:
+
+1. Import `dist/telegram-exec-approval-ui.skill` into the target OpenClaw environment.
+2. Copy `telegram-exec-approval-ui/` into a skills directory when you want the editable source.
+
+## Use
+
+Trigger the skill when Telegram exec approvals are missing buttons, using the wrong id, duplicating after restart, or when the fix needs to be packaged for reuse or upstream review.
+
+Start with:
+
+1. `telegram-exec-approval-ui/SKILL.md`
+2. `telegram-exec-approval-ui/references/upstream-plan.md`
+3. `telegram-exec-approval-ui/references/pr-draft.md`
+
+## Repository layout
 
 ```text
-telegram-exec-approval-ui-skill/
+openclaw-telegram-exec-approval-skill/
 ├── README.md
 ├── telegram-exec-approval-ui/
 │   ├── SKILL.md
@@ -33,23 +57,8 @@ telegram-exec-approval-ui-skill/
     └── telegram-exec-approval-ui.skill
 ```
 
-## Use the skill locally
+## Publishing notes
 
-If you want the packaged artifact:
-
-1. Take `dist/telegram-exec-approval-ui.skill`
-2. Import or distribute it wherever you manage OpenClaw skills
-
-If you want the editable source:
-
-1. Open `telegram-exec-approval-ui/SKILL.md`
-2. Read `telegram-exec-approval-ui/references/upstream-plan.md`
-3. Read `telegram-exec-approval-ui/references/pr-draft.md`
-
-## Intended outcome
-
-This repo is meant to help turn a locally validated Telegram approval UX fix into a cleaner upstream OpenClaw PR.
-
-## Status
-
-Work in progress. The skill and references are usable now, and the upstream PR plan is included in the repo.
+- Keep the repository description aligned with the skill trigger language.
+- Regenerate `dist/telegram-exec-approval-ui.skill` after each material skill change.
+- Keep the repo focused on the skill and its packaged artifact; avoid dumping unrelated debugging scraps into the tree.

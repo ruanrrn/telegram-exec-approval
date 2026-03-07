@@ -1,105 +1,96 @@
 ---
 name: telegram-exec-approval-ui
-description: Add or repair Telegram interactive exec approvals in OpenClaw. Use when Telegram should show approval buttons for exec requests, approval messages use the wrong id, duplicate approval messages appear after restarts, or the feature needs to be organized into a reusable patch/PR workflow.
+description: Diagnose, implement, or repair Telegram interactive exec approvals in OpenClaw. Use when Telegram approval messages are missing buttons, show the wrong approval id, duplicate after restart, fail to route back to the native approve command, or when the learned fix needs to be packaged for reuse or upstream review.
 ---
 
 # Telegram Exec Approval UI
 
-Implement Telegram-native exec approvals in two phases: prove the behavior locally, then prepare the smallest source-level change for an upstream PR.
+Stabilize the Telegram exec approval flow first, then reduce the local fix into a reusable or upstreamable patch.
 
 ## Workflow
 
-1. Split the approval surfaces before changing code.
+1. Identify which approval surface is wrong.
 2. Make the native Telegram approval path work end-to-end.
 3. Remove duplicate or misleading approval surfaces.
-4. Package the learned workflow so it can be reused or proposed upstream.
+4. Package the working flow for reuse or upstream review.
 
-## Step 1: Split the approval surfaces
+## 1. Separate the approval surfaces
 
-Identify which approval UI the user is seeing.
+Do not trust the first id you see.
 
-- OpenClaw native approval uses the full `approvalId` and is the one `/approve <id> allow-once|allow-always|deny` must resolve.
-- A short 8-character id usually comes from an `approvalSlug` display surface.
-- Never assume the first visible approval message is the correct one.
+- The authoritative id is the full `approvalId` used by `/approve <id> allow-once|allow-always|deny`.
+- Short ids are often display-only `approvalSlug` values.
+- The pending assistant reply, Telegram button message, and any extra gateway or harness message may show different identifiers.
 
-Check these separately:
+Check each surface independently before patching.
 
-- Assistant-facing pending reply text
-- Telegram-native button message
-- Any extra gateway/harness approval message
+## 2. Make the Telegram-native path work
 
-## Step 2: Make the native Telegram approval path work
+Prefer a runtime-side Telegram handler over plain text forwarding.
 
-Prefer a Telegram runtime-side handler over text-only forwarding.
+Required behavior:
 
-Core requirements:
+- subscribe to `exec.approval.requested`
+- resolve the Telegram target from the session record
+- normalize `telegram:<id>` into a Bot API chat id
+- send inline buttons that call `/approve <full-approval-id> ...`
 
-- Subscribe to `exec.approval.requested`
-- Resolve the Telegram chat target from the session record
-- Normalize `telegram:<id>` into a real Bot API chat id
-- Send Telegram inline buttons that call `/approve <full-approval-id> ...`
+Useful validation:
 
-Useful local validation:
+- prove ordinary Telegram inline buttons work first
+- log the exact `approvalId` emitted by the event
+- verify the Telegram button message and assistant-facing pending reply refer to the same full id
 
-- Verify ordinary Telegram inline buttons work first
-- Log native approval events and the exact `approvalId`
-- Confirm the Telegram button message and the pending reply reference the same full UUID
+## 3. Fix the common failure modes
 
-## Step 3: Fix the common failure modes
+### Wrong id
 
-### Wrong id shown
+Patch the visible surface that still uses `approvalSlug` instead of `approvalId`.
 
-Patch any remaining display surface that uses `approvalSlug` instead of `approvalId`.
+Common local validation targets can include runtime bundles such as:
 
-Common local patch targets in this workspace have included:
+- `dist/reply-*.js`
+- `dist/pi-embedded-*.js`
+- `dist/plugin-sdk/reply-*.js`
 
-- `dist/reply-DhtejUNZ.js`
-- `dist/pi-embedded-CtM2Mrrj.js`
-- `dist/pi-embedded-DgYXShcG.js`
-- `dist/plugin-sdk/reply-DFFRlayb.js`
-- `dist/subagent-registry-CkqrXKq4.js`
+Patch the smallest user-visible surface first, then retest with a fresh approval.
 
-When testing locally, patch the smallest visible surface first, then retest with a fresh approval.
+### Duplicate approval messages
 
-### Duplicate approval messages after restart
+Treat the Telegram approval sender as a singleton per account and dedupe repeated `approvalId` handling for a short window.
 
-Treat the Telegram approval handler as a singleton per account and suppress duplicate `approvalId` processing for a short time window.
+### Noisy approval body
 
-### Too much repeated text
+If another OpenClaw message already carries the detailed approval text, keep the Telegram-native button message minimal.
 
-If the gateway already sends the detailed approval message, keep the custom Telegram button message minimal. A short action label plus buttons is enough.
+## 4. Prepare the reusable or PR-minded version
 
-## Step 4: Prepare the PR-minded version
+Once local behavior works, collapse the fix into the smallest coherent change.
 
-Once the local behavior works, reduce the fix into the smallest coherent upstream change.
+Prefer these rules:
 
-Prefer these principles:
+- keep one authoritative `approvalId`
+- avoid Telegram-only synthetic approval ids
+- keep the Telegram button sender small
+- preserve `/approve <id> ...` as the fallback path
+- strip temporary debug logging before packaging or opening a PR
 
-- Keep one authoritative `approvalId`
-- Avoid separate Telegram-only ids
-- Keep the runtime-specific Telegram button sender small
-- Do not duplicate approval details across multiple Telegram messages unless necessary
-- Preserve `/approve <id> ...` as the fallback path
+Read these bundled references when needed:
 
-For upstream prep:
-
-- Record which local dist patches were necessary
-- Map those back to the logical source areas they represent
-- Separate behavior fixes from debug logging before proposing a PR
-- Read `references/upstream-plan.md` to collapse local dist experiments into a clean source-level patch plan
-- Read `references/pr-draft.md` when preparing the PR title, summary, and validation notes
+- `references/upstream-plan.md` for mapping local runtime experiments back to the logical source patch
+- `references/pr-draft.md` for PR title, summary, and validation framing
 
 ## Validation checklist
 
-Do not call the feature done until all are true:
+Do not call the flow fixed until all are true:
 
-- Telegram approval messages show buttons
-- Tapping a button resolves the correct full `approvalId`
-- The assistant-facing pending reply also shows the full `approvalId`
-- Duplicate native approval messages are suppressed
-- The custom Telegram button message does not repeat unnecessary approval details
-- After issuing an approval request, the assistant waits for the user approval action to complete before sending another routine chat reply, so execution can continue cleanly on approval-driven surfaces
+- Telegram approval messages show inline buttons
+- tapping a button resolves the correct full `approvalId`
+- the assistant-facing pending reply also references the full `approvalId`
+- duplicate native approval messages are suppressed
+- the custom Telegram button message stays minimal
+- after sending an approval request, the assistant avoids extra routine replies until the approval action finishes
 
 ## Packaging rule
 
-If the feature is likely to be reused, package this skill and keep the task state in `TODO.md` and `memory/active-task.md` aligned while the patch is still in flight.
+When the fix is reusable, package the skill and keep any in-flight task state aligned with the current verification status.
