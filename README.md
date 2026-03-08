@@ -11,133 +11,106 @@ English | [简体中文](README.zh-CN.md)
 ![README-Bilingual](https://img.shields.io/badge/README-Bilingual-F9FAFB?style=flat-square&labelColor=065F46)
 ![License-MIT](https://img.shields.io/badge/License-MIT-F9FAFB?style=flat-square&labelColor=1F2937)
 
-Reusable skill for fixing Telegram interactive exec approvals without turning the debugging process into folklore.
+Diagnose and repair Telegram interactive exec approvals in OpenClaw, with a workflow focused on the native approval path, correct approval IDs, duplicate suppression, and reusable upstream-ready fixes.
 
-## Quick pitch
+## Overview
 
-Fix broken Telegram approval buttons, IDs, duplicates, and upstream handoff.
-Make the native approval path behave first. Then package the fix like an adult.
+`telegram-exec-approval` is a focused public skill repository for one operational problem: Telegram exec approvals that look valid to users but fail in practice.
+
+The repository is intentionally narrow. It does not try to document general Telegram development or broad OpenClaw troubleshooting. Instead, it packages a repeatable method for repairing the approval flow when the visible message, the inline button action, and the underlying `approvalId` drift out of sync.
 
 ## Why this exists
 
-Telegram approval UX fails in a few especially annoying ways:
+Telegram approval failures tend to cluster around the same set of issues:
 
-- approval messages show the wrong ID
-- buttons are missing or point at the wrong approval target
-- duplicate approval messages appear after restart
-- local validation works, but the fix never gets packaged cleanly for reuse or upstream review
+- approval messages expose the wrong identifier
+- inline buttons are missing or route to the wrong approval target
+- duplicate approval messages appear after restart or replay
+- a local runtime workaround exists, but nobody turns it into a clean reusable or upstreamable fix
 
-That combination is how teams end up with tribal knowledge instead of a reproducible fix.
+That combination is expensive because it produces folklore instead of a reliable repair path. This repository exists to make the diagnosis and fix sequence explicit, testable, and reusable.
 
-`telegram-exec-approval` exists to stop that nonsense.
+## Scope
 
-It packages a focused workflow for:
+Use this repository when the main problem is the Telegram exec approval experience itself.
 
-- separating the visible approval surfaces
-- validating the Telegram-native approval path end-to-end
-- fixing wrong IDs and missing or misleading button behavior
-- deduping noisy approval messages
-- turning the local fix into a reusable or upstreamable change
+Good fit:
 
-## Works independently
+- debugging approval messages that show the wrong ID
+- repairing Telegram inline button routing for exec approvals
+- distinguishing display-only IDs from the full authoritative `approvalId`
+- suppressing duplicate native approval messages after restart or repeated event delivery
+- turning a local validation patch into a cleaner reusable or upstream-facing change
 
-`telegram-exec-approval` stands on its own.
+Not a fit:
 
-Use it even if you do not adopt any broader Telegram debugging or continuity skill. On its own, it already improves:
+- general Telegram bot development
+- unrelated OpenClaw messaging work
+- broad OpenClaw troubleshooting that does not involve Telegram exec approvals
+- packaging a general-purpose Telegram toolkit
 
-- approval ID correctness
-- inline button routing
-- duplicate approval suppression
-- Telegram-native validation discipline
-- reusable packaging and upstream handoff
+## What the skill covers
 
-Related repos may help nearby problems, but they are not required for this repo to be useful.
+The bundled skill tells an agent to keep the repair disciplined and minimal:
 
-## What the skill teaches
-
-The skill tells the agent to:
-
-- separate the approval surfaces before patching anything
-- treat the full `approvalId` as authoritative rather than trusting display-only IDs
+- separate each approval surface before patching anything
+- treat the full `approvalId` as authoritative
 - make the native Telegram approval path work end-to-end first
-- patch the smallest wrong user-visible surface before widening the fix
-- dedupe repeated approval handling for a short window when duplicate messages appear
-- keep the Telegram button message minimal if another message already carries the detailed body
-- collapse a local runtime fix into the smallest reusable or upstream-ready change
+- patch the smallest user-visible surface that is still wrong
+- dedupe repeated approval handling when duplicate messages appear
+- keep Telegram button messages minimal when another OpenClaw message already carries the detailed body
+- reduce a local runtime fix into the smallest reusable or upstream-ready change
+
+## Workflow summary
+
+A typical repair pass should look like this:
+
+1. Identify which approval surface is wrong and which identifier each surface shows.
+2. Verify that the Telegram-native approval path can carry the full `approvalId` end-to-end.
+3. Fix the smallest wrong user-visible surface before widening the patch.
+4. Suppress duplicate approval sends if restart or replay generates noisy repeats.
+5. Collapse the working repair into a reusable or upstream-reviewable change.
+6. Package the result without mixing in unrelated Telegram debugging.
 
 ## When to use it
 
-Use `telegram-exec-approval` when Telegram needs any of the following:
+Use `telegram-exec-approval-ui` when the incident is specifically about Telegram approval UX rather than the entire OpenClaw runtime.
 
-- diagnose broken exec approval flows
-- repair button-driven approval routing
-- distinguish full `approvalId` from short display-only IDs
-- suppress duplicate native approval messages after restart
-- prepare a cleaner upstream patch or PR for the Telegram approval flow
+Typical triggers:
 
-## Example behavior
+- "Telegram approval buttons stopped working."
+- "The visible approval ID does not match what `/approve` needs."
+- "Restart now sends duplicate approval messages."
+- "The local fix works, but we still need a clean reusable patch or PR plan."
 
-### Example 1: wrong visible ID
+## Representative outcomes
 
-A Telegram approval message shows a short ID, while `/approve` only works with a longer internal ID.
+### Wrong visible ID
 
-A good agent should:
+A Telegram approval message shows a short display value, while the executable approval path requires the full internal ID.
 
-1. verify which surface is showing the wrong identifier
-2. treat the full `approvalId` as the authoritative value
-3. patch the smallest visible surface that still leaks the wrong ID
-4. retest with a fresh approval request
+A good repair flow should prove which surface is wrong, preserve the full `approvalId` as the source of truth, patch the smallest leaking surface, and retest with a fresh approval request.
 
-### Example 2: buttons exist but route badly
+### Buttons exist but resolve badly
 
-A button message appears in Telegram, but tapping it does not resolve the correct approval.
+The UI shows inline buttons, but pressing them does not approve the intended request.
 
-A good agent should:
+A good repair flow should verify ordinary Telegram inline buttons first, compare the emitted approval payload with the pending assistant reply, and fix the Telegram routing path before touching broader presentation layers.
 
-1. prove ordinary Telegram inline buttons work at all
-2. log and compare the exact emitted `approvalId`
-3. verify the button and the assistant-facing pending reply refer to the same full ID
-4. fix the Telegram handler before touching broader surfaces
+### Local fix works, reusable change does not exist yet
 
-### Example 3: local fix works, upstream plan is messy
+A runtime patch has already demonstrated the correct behavior, but the change is still trapped in local experimentation.
 
-A local runtime patch solves the problem, but the source-level change is still unclear.
+A good repair flow should remove temporary debugging noise, map the runtime fix back to the real source-level change, and package the result so another operator can reuse it without rediscovering the same steps.
 
-A good agent should:
+## Related skill repos
 
-1. strip temporary debugging junk
-2. collapse the working fix into the smallest coherent change
-3. use the bundled references for PR framing and upstream mapping
-4. package the result so the fix is reusable outside one machine
+These repositories are related examples, not required dependencies:
 
-## Related skills
+- `restart-continuity`: useful when approval issues are entangled with restart behavior - <https://github.com/ruanrrn/restart-continuity>
+- `multi-task-continuity`: useful when approval repair happens inside a longer multitask workflow - <https://github.com/ruanrrn/multi-task-continuity>
 
-These are related, not required:
-
-- `restart-continuity`: useful when approval UX bugs get tangled with restart behavior — <https://github.com/ruanrrn/restart-continuity>
-- `multi-task-continuity`: useful when approval repair happens inside a longer multitask workflow — <https://github.com/ruanrrn/multi-task-continuity>
-
-If Telegram exec approval UX is the main pain, use this repo alone.
-
-## Social preview
-
-Suggested social preview asset: `assets/social-preview.svg`
-
-Suggested one-line copy:
-
-> Fix broken Telegram approval buttons, IDs, duplicates, and upstream handoff.
-
-GitHub note:
-
-- The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
-- To use this image as the repository social preview, upload `assets/social-preview.svg` manually in the repo settings UI.
-
-## What you get
-
-- `telegram-exec-approval-ui/` - the skill source
-- `telegram-exec-approval-ui/references/upstream-plan.md` - how to translate local runtime patching into a source-level fix
-- `telegram-exec-approval-ui/references/pr-draft.md` - PR framing and validation notes
-- `dist/telegram-exec-approval-ui.skill` - packaged artifact ready to install or share
+Start here when the problem is Telegram exec approval UX itself.
 
 ## Install
 
@@ -146,12 +119,34 @@ Use either path:
 1. Import `dist/telegram-exec-approval-ui.skill` into an OpenClaw environment.
 2. Copy `telegram-exec-approval-ui/` into your skills directory if you want the editable source.
 
+## What this repo contains
+
+- `telegram-exec-approval-ui/` - the skill source
+- `telegram-exec-approval-ui/references/upstream-plan.md` - guidance for translating local runtime experiments into a source-level fix
+- `telegram-exec-approval-ui/references/pr-draft.md` - PR framing and validation notes for upstream review
+- `dist/telegram-exec-approval-ui.skill` - the packaged artifact ready to import
+- `assets/social-preview.svg` - the repository banner and suggested social-preview asset
+
+## Social preview
+
+Suggested social preview asset: `assets/social-preview.svg`
+
+Suggested one-line copy:
+
+> Repair Telegram exec approvals with correct IDs, working buttons, duplicate suppression, and a clean upstream path.
+
+GitHub note:
+
+- The current `gh` CLI and GraphQL `UpdateRepositoryInput` do not expose a writable custom social preview field.
+- To use this image as the repository social preview, upload `assets/social-preview.svg` manually in the repo settings UI.
+
 ## Repository layout
 
 ```text
 telegram-exec-approval/
 ├── LICENSE
 ├── README.md
+├── README.zh-CN.md
 ├── CONTRIBUTING.md
 ├── assets/
 │   └── social-preview.svg
@@ -166,14 +161,14 @@ telegram-exec-approval/
 
 ## Contributing
 
-See `CONTRIBUTING.md` for contribution scope, PR expectations, and how to keep this repo focused on Telegram exec approvals instead of turning it into a generic Telegram junk drawer.
+See `CONTRIBUTING.md` for contribution scope, PR expectations, and the boundary that keeps this repository focused on Telegram exec approvals instead of broader Telegram integration work.
 
 ## Release hygiene
 
-- Keep the repository description aligned with the skill trigger language
-- Regenerate `dist/telegram-exec-approval-ui.skill` after each material skill change
-- Keep the repo narrow and practical; no unrelated debug junk
-- Keep the reusable and upstream-facing guidance aligned with the actual fix path
+- regenerate `dist/telegram-exec-approval-ui.skill` after each material skill change
+- keep `README.md`, `README.zh-CN.md`, and `telegram-exec-approval-ui/SKILL.md` aligned
+- preserve the narrow repository scope instead of expanding into unrelated Telegram debugging
+- keep the reusable guidance and upstreaming notes aligned with the actual repair path
 
 ## Repository
 

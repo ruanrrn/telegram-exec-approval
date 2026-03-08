@@ -11,142 +11,136 @@
 ![README-Bilingual](https://img.shields.io/badge/README-Bilingual-F9FAFB?style=flat-square&labelColor=065F46)
 ![License-MIT](https://img.shields.io/badge/License-MIT-F9FAFB?style=flat-square&labelColor=1F2937)
 
-一个专门收拾 Telegram 交互式 exec 审批问题的 OpenClaw skill：把按钮、ID、去重和上游交付这条线做清楚，别再靠口口相传修锅。
+一个聚焦 OpenClaw Telegram 交互式 exec 审批修复的公开 skill 仓库：把原生审批链路、正确的审批 ID、重复消息抑制，以及可复用的上游交付路径整理成可重复执行的工作流。
 
-## Quick pitch
+## 概览
 
-修好坏掉的 Telegram 审批按钮、错误 ID、重复消息，以及上游交付路径。
-先让原生审批链路正常，再把修复整理成能复用的东西。
+`telegram-exec-approval` 是一个边界很窄的公开 skill 仓，专门处理一种非常具体、也非常烦人的问题：Telegram exec 审批看起来像在工作，实际却在用户可见层、按钮路由层、和底层 `approvalId` 之间对不上。
 
-## Why this exists
+这个仓刻意不去扮演通用 Telegram 开发指南，也不想顺手接管整个 OpenClaw 故障排查。它只做一件事：把 Telegram exec 审批从“靠经验修”变成“按流程修”。
 
-Telegram 审批 UX 最烦人的地方，不是单点 bug，而是一串破事会一起出现：
+## 为什么需要它
 
-- 审批消息显示的是错的 ID
-- 按钮缺失，或者点了之后走到错的审批目标
-- 重启后重复发审批消息
-- 本地明明修好了，但最后没人把修复整理成可复用包或可提交 PR 的变更
+Telegram 审批问题通常不是单点故障，而是几类问题一起出现：
 
-这种组合拳最容易把问题变成“只有老员工才知道怎么修”的部落传说。
+- 审批消息显示了错误的标识符
+- inline button 缺失，或者点击后路由到错误的审批目标
+- 重启或事件重放后出现重复审批消息
+- 本地 runtime 侧已经验证出可行修复，但没有被整理成可复用或可上游提交的变更
 
-`telegram-exec-approval` 就是拿来结束这种烂传统的。
+这类问题最糟糕的地方，不是难，而是特别容易演变成部落传说。这个仓的意义，就是把诊断顺序、修复边界和打包出口写成明确流程，避免下次再从零踩坑。
 
-它把这条工作流打包成一个明确的技能：
+## 适用范围
 
-- 先分清不同的审批展示面
-- 端到端验证 Telegram 原生审批路径
-- 修正错误 ID、缺失按钮或误导性按钮行为
-- 压住重复审批消息
-- 把本地修复收敛成可复用或可上游化的改动
-
-## Works independently
-
-`telegram-exec-approval` 可以单独使用。
-
-即使你没上别的 Telegram 调试或 continuity skill，它本身也已经能改善这些问题：
-
-- 审批 ID 正确性
-- inline button 路由
-- 重复审批抑制
-- Telegram 原生路径验证纪律
-- 可复用打包与上游交付
-
-相关仓可能有帮助，但不是这个仓成立的前提。
-
-## What the skill teaches
-
-这个 skill 会要求代理：
-
-- 在补丁之前先拆清审批展示面
-- 把完整 `approvalId` 当成唯一权威，而不是相信展示用短 ID
-- 先让 Telegram 原生审批路径端到端可用
-- 优先修最小的错误用户可见面，而不是一上来乱扩散
-- 当重复消息出现时，对同一个 `approvalId` 做短时间窗口去重
-- 如果另一条消息已经带了详细正文，就把 Telegram 按钮消息保持得尽量简短
-- 把本地 runtime 修复收敛成最小的可复用或可上游提交改动
-
-## When to use it
+当核心问题就是 Telegram exec 审批体验本身时，用这个仓最合适。
 
 适合这些场景：
 
-- 排查 Telegram exec 审批流为什么坏了
-- 修复按钮驱动的审批路由
-- 区分完整 `approvalId` 和展示用短 ID
-- 压制重启后的重复原生审批消息
-- 准备更干净的上游 patch 或 PR
+- 排查审批消息为什么显示了错误 ID
+- 修复 Telegram inline button 的 exec 审批路由
+- 区分展示用短 ID 和真正权威的完整 `approvalId`
+- 抑制重启后或重复事件投递造成的重复原生审批消息
+- 把本地验证有效的 patch 收敛成更干净的复用方案或上游改动
 
-## Example behavior
+不适合这些场景：
 
-### Example 1: 可见 ID 不对
+- 通用 Telegram bot 开发
+- 与 exec 审批无关的 OpenClaw 消息工作
+- 不涉及 Telegram exec 审批的宽泛 OpenClaw 故障排查
+- 把仓库扩张成通用 Telegram 工具箱
 
-Telegram 审批消息里显示的是短 ID，但 `/approve` 只认更长的内部 ID。
+## 这个 skill 覆盖什么
 
-靠谱的代理应该：
+仓内 skill 要求代理按克制、可验证的方式处理修复：
 
-1. 先确认到底是哪一个展示面在显示错误 ID
-2. 把完整 `approvalId` 当成权威值
-3. 只补最小但仍然泄漏错误 ID 的那一层可见面
-4. 用新的审批请求重新验证
+- 在打补丁之前先拆清不同审批展示面
+- 把完整 `approvalId` 当成唯一权威值
+- 先让 Telegram 原生审批路径端到端跑通
+- 优先修复最小但仍然错误的用户可见面
+- 当重复消息出现时，对重复审批处理做去重
+- 如果另一条 OpenClaw 消息已经带了详细正文，就让 Telegram 按钮消息保持简洁
+- 把本地 runtime 修复收敛成最小的可复用或可上游提交改动
 
-### Example 2: 按钮有了，但路由是歪的
+## 工作流概览
 
-Telegram 里出现了按钮，但点下去并不能解析到正确审批。
+一次标准修复通常应该这样推进：
 
-靠谱的代理应该：
+1. 确认到底是哪一个审批展示面出了问题，以及每个展示面各自显示什么 ID。
+2. 验证 Telegram 原生审批路径能否端到端传递完整 `approvalId`。
+3. 先修最小的错误用户可见面，再决定是否扩大补丁范围。
+4. 如果重启或重放导致重复审批消息，先把重复发送压住。
+5. 把已经验证有效的修复收敛成可复用或可上游评审的改动。
+6. 打包结果时保持仓库边界干净，不混入无关 Telegram 调试内容。
 
-1. 先证明普通 Telegram inline button 本身能工作
-2. 记录并比对实际发出的 `approvalId`
-3. 确认按钮消息和 assistant 侧 pending reply 指向的是同一个完整 ID
-4. 先修 Telegram handler，再去碰更广的显示层
+## 何时使用
 
-### Example 3: 本地修好了，但上游方案一团糟
+当问题的重心是 Telegram 审批 UX，而不是整个 OpenClaw runtime 时，就该用 `telegram-exec-approval-ui`。
 
-本地 runtime patch 已经能修复问题，但源码级改动仍然没整理清楚。
+典型触发语句包括：
 
-靠谱的代理应该：
+- “Telegram 审批按钮坏了。”
+- “消息里显示的审批 ID 和 `/approve` 真正要的对不上。”
+- “重启之后审批消息开始重复发。”
+- “本地已经修通了，但还缺一个干净的复用补丁或 PR 方案。”
 
-1. 去掉临时调试垃圾
-2. 把有效修复收敛成最小、完整、可解释的改动
-3. 使用仓内 reference 来组织 PR 说明和上游映射
-4. 把结果打包好，确保不只在这台机器上能复用
+## 代表性结果
 
-## Related skills
+### 可见 ID 错误
 
-这些是相关项，不是依赖项：
+Telegram 审批消息展示的是短 ID，但实际审批链路要求的是完整内部 ID。
 
-- `restart-continuity`：当审批 UX bug 跟重启行为缠在一起时很有用 —— <https://github.com/ruanrrn/restart-continuity>
-- `multi-task-continuity`：当审批修复是更长多任务流程的一部分时很有用 —— <https://github.com/ruanrrn/multi-task-continuity>
+靠谱的修复流程应该先定位到底是哪一个展示面泄漏了错误值，把完整 `approvalId` 作为唯一真值，只修复最小的错误展示面，然后用新的审批请求重新验证。
 
-如果核心问题就是 Telegram exec 审批，用这个仓单独上就够了。
+### 按钮存在，但审批目标不对
+
+界面里已经有 inline button，但点击后并不能命中正确审批请求。
+
+靠谱的修复流程应该先证明普通 Telegram inline button 本身是通的，再把按钮触发的 payload 与 assistant 侧 pending reply 做逐项比对，优先修 Telegram 路由链路，而不是先去大动显示层。
+
+### 本地修好了，但还没有可复用成果
+
+runtime patch 已经证明修复方向正确，但改动仍停留在本地实验状态。
+
+靠谱的修复流程应该先清理临时调试垃圾，再把 runtime 试验映射回真正的源码级改动，最后打包成别人不需要重新发明轮子也能复用的结果。
+
+## 相关 skill 仓
+
+这些仓库是相关示例，不是必需依赖：
+
+- `restart-continuity`：当审批问题和重启行为缠在一起时很有用 - <https://github.com/ruanrrn/restart-continuity>
+- `multi-task-continuity`：当审批修复发生在更长的多任务流程中时很有用 - <https://github.com/ruanrrn/multi-task-continuity>
+
+如果问题本体就是 Telegram exec 审批 UX，从这个仓开始就对了。
+
+## 安装
+
+两种方式都可以：
+
+1. 把 `dist/telegram-exec-approval-ui.skill` 导入 OpenClaw 环境。
+2. 如果需要可编辑源码，就把 `telegram-exec-approval-ui/` 复制到你的 skills 目录。
+
+## 仓库内容
+
+- `telegram-exec-approval-ui/` - skill 源码
+- `telegram-exec-approval-ui/references/upstream-plan.md` - 把本地 runtime 实验映射成源码级修复的说明
+- `telegram-exec-approval-ui/references/pr-draft.md` - 面向上游评审的 PR 组织方式与验证备注
+- `dist/telegram-exec-approval-ui.skill` - 可直接导入的打包产物
+- `assets/social-preview.svg` - 仓库 banner 与建议使用的 social-preview 资源
 
 ## Social preview
 
-建议 social preview 资源：`assets/social-preview.svg`
+建议使用的 social preview 资源：`assets/social-preview.svg`
 
 建议一句话文案：
 
-> Fix broken Telegram approval buttons, IDs, duplicates, and upstream handoff.
+> Repair Telegram exec approvals with correct IDs, working buttons, duplicate suppression, and a clean upstream path.
 
 GitHub 备注：
 
 - 当前公开的 `gh` CLI 和 GraphQL `UpdateRepositoryInput` 都没有可写的 custom social preview 字段。
-- 如果要把这张图真正设成仓库 social preview，只能去 GitHub 仓库设置页手动上传 `assets/social-preview.svg`。
+- 如果要把这张图真正设成仓库 social preview，仍然需要到仓库设置页手动上传 `assets/social-preview.svg`。
 
-## What you get
-
-- `telegram-exec-approval-ui/` - skill 源码
-- `telegram-exec-approval-ui/references/upstream-plan.md` - 把本地 runtime patch 收敛成源码级修复的路径说明
-- `telegram-exec-approval-ui/references/pr-draft.md` - PR 说明框架和验证备注
-- `dist/telegram-exec-approval-ui.skill` - 可直接安装或分享的打包产物
-
-## Install
-
-两种方式都可以：
-
-1. 直接导入 `dist/telegram-exec-approval-ui.skill`
-2. 把 `telegram-exec-approval-ui/` 复制到你的 skills 目录，按源码方式使用
-
-## Repository layout
+## 仓库结构
 
 ```text
 telegram-exec-approval/
@@ -165,18 +159,18 @@ telegram-exec-approval/
     └── telegram-exec-approval-ui.skill
 ```
 
-## Contributing
+## 贡献
 
-见 `CONTRIBUTING.md`，里面写了贡献范围、PR 预期，以及怎样避免把这个仓做成 Telegram 万能杂物间。
+见 `CONTRIBUTING.md`。其中说明了贡献范围、PR 预期，以及如何保持这个仓持续聚焦 Telegram exec 审批，而不是失控扩张成更宽泛的 Telegram 集成仓。
 
-## Release hygiene
+## 发布卫生
 
-- 仓库描述要和 skill 的触发语义保持一致
 - 每次 skill 有实质改动后，都要重新生成 `dist/telegram-exec-approval-ui.skill`
-- 保持仓库克制、可复用，不要混进无关调试垃圾
-- 保证可复用说明和上游交付说明始终跟实际修复路径一致
+- 保持 `README.md`、`README.zh-CN.md` 和 `telegram-exec-approval-ui/SKILL.md` 的表述一致
+- 维持仓库边界克制，不把无关 Telegram 调试问题混进来
+- 保证复用说明和上游交付说明始终和真实修复路径保持一致
 
-## Repository
+## 仓库信息
 
 - GitHub: `https://github.com/ruanrrn/telegram-exec-approval`
 - License: MIT
