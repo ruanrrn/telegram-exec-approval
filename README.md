@@ -1,11 +1,14 @@
 # Telegram Exec Approval
 
+English | [简体中文](README.zh-CN.md)
+
 ![Telegram Exec Approval banner](assets/social-preview.svg)
 
 ![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-1F2937?style=flat-square)
 ![Focus-Telegram Approval UI](https://img.shields.io/badge/Focus-Telegram%20Approval%20UI-10B981?style=flat-square&labelColor=1F2937)
 ![Works-Standalone](https://img.shields.io/badge/Works-Standalone-F9FAFB?style=flat-square&labelColor=374151)
 ![Artifact-.skill Included](https://img.shields.io/badge/Artifact-.skill%20Included-D1FAE5?style=flat-square&labelColor=374151)
+![README-Bilingual](https://img.shields.io/badge/README-Bilingual-F9FAFB?style=flat-square&labelColor=065F46)
 ![License-MIT](https://img.shields.io/badge/License-MIT-F9FAFB?style=flat-square&labelColor=1F2937)
 
 Reusable skill for fixing Telegram interactive exec approvals without turning the debugging process into folklore.

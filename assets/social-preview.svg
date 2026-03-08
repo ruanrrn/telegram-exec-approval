@@ -1,15 +1,40 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1280" height="640" fill="#F6EFEA"/>
+  <rect width="1280" height="640" fill="#F5EEE7"/>
   <rect x="48" y="48" width="1184" height="544" rx="28" fill="#1F2937"/>
-  <rect x="84" y="84" width="250" height="40" rx="20" fill="#10B981"/>
-  <text x="106" y="110" fill="#0F172A" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
-  <text x="84" y="215" fill="#F9FAFB" font-family="Georgia, serif" font-size="72" font-weight="700">Telegram Exec</text>
-  <text x="84" y="290" fill="#A7F3D0" font-family="Georgia, serif" font-size="72" font-weight="700">Approval UI</text>
-  <text x="84" y="356" fill="#D1FAE5" font-family="Arial, sans-serif" font-size="30">Fix broken Telegram approval buttons, IDs, duplicates, and upstream handoff.</text>
-  <text x="84" y="416" fill="#F3F4F6" font-family="Arial, sans-serif" font-size="26">Make the native approval path behave first. Then package the fix like an adult.</text>
-  <rect x="900" y="150" width="220" height="70" rx="18" fill="#10B981"/>
-  <rect x="860" y="260" width="300" height="72" rx="18" fill="#374151" stroke="#A7F3D0" stroke-width="4"/>
-  <rect x="915" y="370" width="190" height="62" rx="16" fill="#EF4444"/>
-  <path d="M830 220C840 185 870 155 910 148" stroke="#F9FAFB" stroke-width="10" stroke-linecap="round"/>
-  <path d="M1160 400C1180 390 1195 372 1202 350" stroke="#F9FAFB" stroke-width="10" stroke-linecap="round"/>
+
+  <rect x="88" y="84" width="250" height="40" rx="20" fill="#10B981"/>
+  <text x="110" y="110" fill="#0F172A" font-family="Georgia, serif" font-size="24" font-weight="700">OpenClaw Skill</text>
+
+  <text x="88" y="214" fill="#F9FAFB" font-family="Georgia, serif" font-size="74" font-weight="700">Telegram Exec</text>
+  <text x="88" y="290" fill="#A7F3D0" font-family="Georgia, serif" font-size="74" font-weight="700">Approval UI</text>
+  <text x="88" y="358" fill="#D1FAE5" font-family="Arial, sans-serif" font-size="30">Fix broken Telegram approval buttons, IDs,</text>
+  <text x="88" y="398" fill="#D1FAE5" font-family="Arial, sans-serif" font-size="30">duplicates, and upstream handoff.</text>
+  <text x="88" y="456" fill="#F3F4F6" font-family="Arial, sans-serif" font-size="26">Make the native approval path behave first.</text>
+  <text x="88" y="492" fill="#D1D5DB" font-family="Arial, sans-serif" font-size="26">Then package the fix like an adult.</text>
+
+  <path d="M792 178C834 132 892 108 954 108C1046 108 1126 156 1170 234" stroke="#34D399" stroke-width="12" stroke-linecap="round" stroke-opacity="0.9"/>
+  <path d="M804 470C846 512 908 538 978 538C1078 538 1166 484 1200 402" stroke="#A7F3D0" stroke-width="12" stroke-linecap="round" stroke-opacity="0.8"/>
+
+  <rect x="844" y="146" width="270" height="156" rx="28" fill="#0F172A" stroke="#A7F3D0" stroke-width="4"/>
+  <rect x="876" y="178" width="116" height="14" rx="7" fill="#10B981"/>
+  <rect x="876" y="208" width="188" height="12" rx="6" fill="#E5E7EB" fill-opacity="0.92"/>
+  <rect x="876" y="232" width="160" height="12" rx="6" fill="#CBD5E1" fill-opacity="0.85"/>
+  <rect x="876" y="256" width="96" height="12" rx="6" fill="#FDE68A"/>
+
+  <rect x="778" y="250" width="180" height="86" rx="22" fill="#F9FAFB"/>
+  <circle cx="822" cy="293" r="18" fill="#EF4444" fill-opacity="0.18"/>
+  <path d="M814 285L830 301" stroke="#EF4444" stroke-width="6" stroke-linecap="round"/>
+  <path d="M830 285L814 301" stroke="#EF4444" stroke-width="6" stroke-linecap="round"/>
+  <rect x="854" y="280" width="72" height="12" rx="6" fill="#111827" fill-opacity="0.88"/>
+  <rect x="854" y="304" width="52" height="10" rx="5" fill="#6B7280" fill-opacity="0.85"/>
+
+  <rect x="958" y="350" width="208" height="94" rx="24" fill="#10B981"/>
+  <circle cx="1002" cy="396" r="20" fill="#ECFDF5" fill-opacity="0.28"/>
+  <path d="M992 396L999 403L1013 389" stroke="#ECFDF5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="1034" y="382" width="96" height="12" rx="6" fill="#ECFDF5" fill-opacity="0.96"/>
+  <rect x="1034" y="406" width="70" height="10" rx="5" fill="#D1FAE5" fill-opacity="0.9"/>
+
+  <circle cx="1160" cy="162" r="18" fill="#FDE68A" fill-opacity="0.95"/>
+  <circle cx="1192" cy="196" r="10" fill="#A7F3D0" fill-opacity="0.9"/>
+  <circle cx="794" cy="392" r="12" fill="#FDE68A" fill-opacity="0.88"/>
 </svg>
